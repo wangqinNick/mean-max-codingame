@@ -16,4 +16,11 @@ public class Unit {
         this.pos = new Pos(x, y);
         this.mass = mass;
     }
+
+    @Override
+    public String toString() {
+        return "Unit{" +
+                "id=" + id +
+                '}';
+    }
 }

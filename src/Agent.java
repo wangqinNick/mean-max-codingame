@@ -1,12 +1,15 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Agent {
     public State state;
     public Scanner in;
+    public ArrayList<Action> actions;
 
     public Agent() {
         this.state = new State();
         this.in = new Scanner(System.in);
+        this.actions = new ArrayList<>();
     }
 
     public void read() {
@@ -50,14 +53,53 @@ public class Agent {
             }
             Unit unit = new Unit(unitId, unitType, player, radius, vx, vy, extra, extra2, x, y, mass);
             if (unitType == UnitType.WRECK) state.wrecks.add(unit);
-            if (player == ConstantField.MINE) state.myUnits.add(unit);
+            if (unitType == UnitType.TANKER) state.tanks.add(unit);
+            switch (player) {
+                case ConstantField.MINE: state.players[ConstantField.MINE].units.put(unitType, unit); break;
+                case ConstantField.OPPONENT_1: state.players[ConstantField.OPPONENT_1].units.put(unitType, unit); break;
+                case ConstantField.OPPONENT_2: state.players[ConstantField.OPPONENT_2].units.put(unitType, unit); break;
+                default:
+            }
+        }
+    }
+
+    public void print() {
+        for (Action action: actions) {
+            action.print();
         }
     }
 
     public void think() {
-        Unit target = state.wrecks.get(0);
-        System.out.println(target.pos.x + " " + target.pos.y + " 300 FULL SPEED");
-        System.out.println("WAIT");
-        System.out.println("WAIT");
+        reaperPlan();
+        destroyerPlan();
+        doofPlan();
+    }
+
+    public void reaperPlan() {
+        /* Reaper action */
+        int thrust = 300;
+        Unit myReaper = state.getMyReaper();
+        Unit myDestroyer = state.getMyDestroyer();
+        Unit reaperTarget = state.getClosestWreckToReaper();
+        if (reaperTarget == null) reaperTarget = myDestroyer;
+        System.out.println((reaperTarget.pos.x - myReaper.vx) + " " + (reaperTarget.pos.y - myReaper.vy) + " " + thrust + " REAPER");
+    }
+
+    public void destroyerPlan() {
+        /* Tanker action */
+        int thrust = 300;
+        Unit myDestroyer = state.getMyDestroyer();
+        Unit destroyerTarget = state.getClosestTankerToReaper();
+        if (destroyerTarget == null) destroyerTarget = state.getBestOpponent().units.get(UnitType.REAPER);
+        System.out.println((destroyerTarget.pos.x - myDestroyer.vx) + " " + (destroyerTarget.pos.y - myDestroyer.vy) + " " + thrust + " DESTROYER");
+
+    }
+
+    public void doofPlan() {
+        /* Doof action */
+        int thrust = 300;
+        Unit myDoof = state.getMyDoof();
+        Unit doofTarget = state.getBestOpponent().units.get(UnitType.REAPER);
+        System.out.println((doofTarget.pos.x - myDoof.vx) + " " + (doofTarget.pos.y - myDoof.vy) + " " + thrust + " DOOF");
     }
 }

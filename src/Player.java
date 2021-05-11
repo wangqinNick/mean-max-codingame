@@ -14,6 +14,7 @@ class Player {
         while (true) {
             agent.read();
             agent.think();
+            agent.print();
         }
     }
 }
